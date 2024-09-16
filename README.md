@@ -74,7 +74,7 @@ usage:
 
      > source("run_analysis.R") ## load the script
      > run_analysis() ##run the script
-There are 5 main steps in run_analysis.R to process the raw data sets and create the tidy data set.
+There are 6 main steps in run_analysis.R to process the raw data sets and create the tidy data set.
 
 Step-0: Reminder -- to install special package "dplyr". It is necessary to install and to load the package "dplyr" before to perform any processes.
 
