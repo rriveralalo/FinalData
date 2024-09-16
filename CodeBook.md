@@ -153,30 +153,13 @@ They are the following:
 
 The complete list of variables of each feature vector is available in 'features.txt'
 
-
----------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------
-### Tidy data sets
-
-#### Tiday data set: new variable names
-
-* New variable names were from selected input data variables (see previous section)
-* The names were modified mainly to avoid any unnecessary errors in R when this tidy data set 
-  is used as an input data during any data analysis in the future. The methods and reasons are 
-  based on the instruction from the course video-sildes (Week 4: Editing text variables).
-  
-  + The following were modified:
-    -- lower cases; removed bad characters "()"; replaced "-" to "."
-
-* The activity names are also be modified such as: lower cases; removed "_"
-  new activity names: laying, sitting, standing, walking, walkingdownstairs and walkingupstairs.
   
 -------------------------------------------------------------------------------------------------------------
 #### Tidy data set: data structure
 
-* There are 180 observations of 68 variables.
+* There are 180 observations of 88 variables.
 
-		'data.frame':	180 obs. of  68 variables:
+		'data.frame':	180 obs. of  88 variables:
 		 $ activity                 : chr  
 		 $ subject                  : int  
 		 $ tbodyacc.mean.x          : num 
@@ -269,297 +252,83 @@ The complete list of variables of each feature vector is available in 'features.
 This section is also in the section of "My work to the project" in README.md
 
 #### Obtain the raw data sets and put them in the working directory (via Rstudio)
+Download the raw data from the following website: https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
 
- * The following steps were performed in a PC running the operation system Window 8.1.
-      The data cleaning processes were performed in Rstudio with R version 3.1.0
-     
-     + download the raw data from the following website:
-      https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
-      
-     + using the following R command to download the data:
-     
-      		 >setInternet2(TRUE)   
-      		 >url_proj <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-      		 >download.file(urlproj, destfile="Dataset.zip", mode="wb")
-      
-     + unzip the raw data sets
-      
-   			>unzip("Dataset.zip")
-      
-     + put the raw data sets in the selected working directory called "datacleaningproject"
-       that is same name as in a repo in my Github account. 
-       (In other words, my working directory: "C:/Users/SJ/datacleaningproject")
-        
-     		  >getwd()
-        
-     		  [1] "C:/Users/SJ/datacleaningproject"
-        
+Upload file from computer to File pane in RStudio Posit Cloud. Set this file as working directory. > setwd("/cloud/project") Create a tidy data via a R script called run_analysis.R Preparation: data sets and script
+
+The data sets and run_analysis.R must be in the working directory. It is based on one of the requirements this project: The code should have a file run_analysis.R in the main directory that can be run as long as the Samsung data is in your working directory. (see "Instructions and Requirements")
+ 
+    
 #### Create a tidy data via a R script called run_analysis.R
       
- * Preparation:  data sets and script
-     + The data sets and run_analysis.R must be in same the working directory.
-           (It is based on one of the requirements this project: The code should have 
-            a file run_analysis.R in the main directory that can be run as long as the Samsung
-            data is in your working directory. 
-            (see "Instructions and Requirements" section in README.md)
-      
-     + The input raw data for the run_analys.R are:
-        
-            ./train/X_train.txt, ./train/y_train.txt, subject_train.txt;
-            ./test/X_test.txt, ./test/y_test.txt,  subjecct_test.txt;
-            ./activity_labels.txt, ./features.txt
-        
-     + The output tidy data created from run_analysis.R are:
-            ./tidy_average_data.txt (180 rows)
-            ./combinedcleaningdata.txt (optional)
-        
- * How the script run_analysis.R works via Rstudio
-     + usage:
-     
-      		     > source("run_analysis.R") ## load the script
-      		     > run_analysis() ##run the script
-       
-     + There are 5 main steps in run_analysis.R to process the raw data sets and create the tidy data set.
+There are 6 main steps in run_analysis.R to process the raw data sets and create the tidy data set.
 
-         Step-0: Reminder -- to install special package "reshape2".
-                 It is necessary to install and to load the package "reshape2" before to perform
-                  any processes.      
-                  
-         Step-1: Merges the training and the test data sets to create one data set (such as):
-              Load and read the input raw sets; merge three pairs data set (e.g.: X_train.txt, X_test.txt;
-              y_train.txt, y_test.txt; subject_train.txt, subject_text.txt) into three single data set
-              via "rbind" function.
-            
-         Setp-2: Extracts only the measurements on the mean and standard deviation for each measurement.
-              This step is mainly done by the "grep" function by providing the key search patterns
-              "-mean\\(\\)|-std\\(\\)".
-            
-            ++ column names from the data sets were changed into lower-case to avoid any uncessary typos
-               (based on the intruction from the "Week4 slide-notes: Editing Text Variables" from 
-               Coursera course Getting and Cleaning Data); characters "()" were replaced "" and
-               characters "-" was replaced to "." via "gsub" function.
-               
-         Step-3: Uses descriptive activity names to name the activities in the data set.
-              This step is mainly to produce a one-column data frame called "joinlabel" containing
-              descriptive activity names.
-            
-         Step-4: Appropriately labels the data set with descriptive activity names.
-              The step is mainly to combine three joined data frames into one data frame called
-              "cleandata". This is the first cleaned data frame toward to the final tidy data set.
-              An (optional/temporary) output file is created called "combinedcleandata.txt" just in case
-              for an emergency.
-            
-         Step-5: Creates a second, independent tidy data set with the average of each variable
-              for each activity and each subject.
-                          
-              + The final tidy data frame called "tidydfrm" via "melt" function and then "dcast" function.
-            
-              + Finally, a file called "tidy_average_data.txt" was created via "write.table" function.
-                This is the final output tidy processed data.
-              
-              + The detailed description of "tidy_average_data.txt" and the given raw data set
-                are in the sections of "Tidy data set" and "Original raw data sets" respectively.
+Step-0: Reminder -- to install special package "dplyr". It is necessary to install and to load the package "dplyr" before to perform any processes.
+
+Step-1: Assigning all data frames
+
+features <- read.table("UCI HAR Dataset/features.txt", col.names = c("n","functions")) activities <- read.table("UCI HAR Dataset/activity_labels.txt", col.names = c("code", "activity")) subject_test <- read.table("UCI HAR Dataset/test/subject_test.txt", col.names = "subject") x_test <- read.table("UCI HAR Dataset/test/X_test.txt", col.names = features$functions) y_test <- read.table("UCI HAR Dataset/test/y_test.txt", col.names = "code") subject_train <- read.table("UCI HAR Dataset/train/subject_train.txt", col.names = "subject") x_train <- read.table("UCI HAR Dataset/train/X_train.txt", col.names = features$functions) y_train <- read.table("UCI HAR Dataset/train/y_train.txt", col.names = "code")
+
+Setp-2: Merges the training and the test sets to create one data set.
+
+X <- rbind(x_train, x_test) Y <- rbind(y_train, y_test) Subject <- rbind(subject_train, subject_test) Merged_Data <- cbind(Subject, Y, X)
+
+Step-3: Extracts only the measurements on the mean and standard deviation for each measurement.
+
+TidyData <- Merged_Data %>% select(subject, code, contains("mean"), contains("std"))
+
+Step-4: Uses descriptive activity names to name the activities in the data set.
+
+TidyData$code <- activities[TidyData$code, 2]
+
+Step-5: Appropriately labels the data set with descriptive variable names.
+
+names(TidyData)[2] = "activity" names(TidyData)<-gsub("Acc", "Accelerometer", names(TidyData)) names(TidyData)<-gsub("Gyro", "Gyroscope", names(TidyData)) names(TidyData)<-gsub("BodyBody", "Body", names(TidyData)) names(TidyData)<-gsub("Mag", "Magnitude", names(TidyData)) names(TidyData)<-gsub("^t", "Time", names(TidyData)) names(TidyData)<-gsub("^f", "Frequency", names(TidyData)) names(TidyData)<-gsub("tBody", "TimeBody", names(TidyData)) names(TidyData)<-gsub("-mean()", "Mean", names(TidyData), ignore.case = TRUE) names(TidyData)<-gsub("-std()", "STD", names(TidyData), ignore.case = TRUE) names(TidyData)<-gsub("-freq()", "Frequency", names(TidyData), ignore.case = TRUE) names(TidyData)<-gsub("angle", "Angle", names(TidyData)) names(TidyData)<-gsub("gravity", "Gravity", names(TidyData))
+
+Step-6: From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+FinalData <- TidyData %>% group_by(subject, activity) %>% summarise_all(funs(mean)) write.table(FinalData, "FinalData.txt", row.name=FALSE)
 
 -------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------
 #### R code: run_analysis.R
 
-	## run_analysis.R
-	## author: sjchan-ds (gitHub username)
-	## 
-	## The purpose of this project is to demonstrate course students' ability to collect,
-	## work with, and clean a data set. The goal is to prepare tidy data that can be used
-	## for later analysis.
-	## This script is written for creating a tidy data file that can be used for later analysis.
-	## There are five main steps to fulfill the above goal.
-	##
-	## input files: x_train.txt,x_test.txt,y_train.txt,y_test.txt,subject_train.txt,subject_test.txt
-	##              features.txt, activity_labels.txt
-	## output files: tidy_average_data.txt, combinedcleaningdata.txt
-	##
-	## required special package: reshape2
-	##
-	## usage in R:
-	## Requirement: the data files and run_analysis.R should be in the same working directory in Rstudio
-	##
-	## > source("run_analysis.R")
-	## > run_analysis()
-        ##  OR
-	## > ra <- run_analysis()
-	## > ra
-	## [1] "TRUE" ## re-confirm the cleaning process has been performed and a tidy data file
-	##               has been created.
-	##
-	#########################################################################################
-	#########################################################################################
-	##
-	run_analysis <- function() {
-	## 
-	#########################################################################################
-	## Step 0: load the required special package: reshape2 (to use melt fuction and dcast function)
-	##         melt function and dcast function will be used in Step 5
-	##
-	     if (!("reshape2" %in% rownames(installed.packages())) ) {
-	        stop ("Please install required package: reshape2!\n")
-	     } 
-	
-	## Load the required package: reshape2
-	     library(reshape2)
-	
-	#########################################################################################
-	## Step 1: Merges the training and the test sets to create one data set
-	##
-	## Three pairs of data (training and test data sets) need to be merged together
-	## They are: X_train.txt, X_test.txt; (data set)
-	##           y_train.txt, y_test.txt; (label-data set)
-	##           subject_train.txt, subject_test.txt (subject-data set)
-	##   
-	
-	## load/read the data sets and then merge the data sets
-	     cat("\n")
-	     cat("Step1: Merges the training and the test set to create on data set.\n")
-	####### read and merge data set pair##################################
-	     traindata <- read.table("./train/X_train.txt")
-	     testdata  <- read.table("./test/X_test.txt")
-	     joindata  <- rbind(traindata, testdata) 
-	
-	## cross-check dimensions: (observations/rows, variables/columns)
-	     dim(traindata) ##  (7352, 561)
-	     dim(testdata)  ##  (2947, 561)
-	     dim(joindata)  ## (10299, 561)
-	
-	####### read and merge label-data set pair ##############################
-	     trainlabel <- read.table("./train/y_train.txt")
-	     testlabel  <- read.table("./test/y_test.txt")
-	     joinlabel  <- rbind(trainlabel, testlabel)
-	
-	## cross-check dimensions: (observations/rows, variables/columns)
-	     dim(trainlabel) ## (7352, 1)
-	     dim(testlabel)  ## (2947, 1)
-	     dim(joinlabel)  ##(10299, 1)
-	
-	### read and merge subject-data set pair #################################
-	     trainsubject <- read.table("./train/subject_train.txt")
-	     testsubject  <- read.table("./test/subject_test.txt")
-	     joinsubject  <- rbind(trainsubject, testsubject)
-	
-	##  cross-check dimensions: meanStdIndex <- grep("-mean\\(\\) | -std\\(\\)", features[, 2])
-	     dim(trainsubject) ##  (7352, 1)
-	     dim(testsubject)  ##  (2947, 1)
-	     dim(joinsubject)  ## (10299, 1)
-	
-	#########################################################################################
-	## Step 2: Extracts only the measurements on the mean and standard deviation for 
-	##      each measurement.
-	##
-	
-	     cat("\n")
-	     cat("Step2: Extracts only the measurements on the mean and standard deviation for each measurement.\n")
-	##
-	### In order to extract the measurements on the mean and standard deviation,
-	##  I need locate variable names (column names) related to "mean" and
-	##  "standard deviation" stored in the file "features.txt" via the command grep
-	
-	     features <- read.table("features.txt") ##read/load the file
-	## cross-check dimensions: (rows, columns)
-	     dim(features) ## (561, 2)
-	
-	## locate column names with "-mean()" or "-std()" in any rows in column 2
-	     meanstdindex <- grep("-mean\\(\\)|-std\\(\\)", features[, 2])
-	
-	##cross-check length(meanstdindex)
-	     length(meanstdindex) ## 66 variables
-	
-	## only select those columns/measurements on the mean and standard deviation
-	## make a new data frame called joindatanew
-	     joindatanew <- joindata[, meanstdindex] 
-	
-	## cross-check dimensions: (rows, columns)
-	     dim(joindatanew)  ##(10299,66)
-	
-	## put the column names into the new data frame joindatanew
-	     colnames(joindatanew) <- features[meanstdindex, 2] 
-	
-	## remove the bad characters such as "()", "-" in colnames, also lower the case if possible
-	##   in order to avoid any unnecessary errors in later analysis
-	##
-	     colnames(joindatanew) <- gsub("\\(|\\)", "", colnames(joindatanew)) 
-	     colnames(joindatanew) <- gsub("-", ".", colnames(joindatanew))
-	     colnames(joindatanew) <- tolower(colnames(joindatanew))
-	
-	#########################################################################################
-	## Step 3: Uses descriptive activity names to name the activities in the data set.
-	
-	     cat("\n")
-	     cat("Step3: Uses descriptive activity names to name the activities in the data set.\n")
-	
-	## Firstly, it is necessary to load/read the file containing full activity names
-	     activity <- read.table("activity_labels.txt")
-	
-	## Remove bad characters such as "_" and also lower case in the activity names/row names
-	     activity[, 2] <- tolower(gsub("_", "", activity[, 2]))
-	
-	## Create a new activitylabel vector containing descriptive activity names with
-	## the length of rows of joinlabel[, 1] 
-	     activitylabel <- activity[joinlabel[, 1], 2]
-	
-	## Replace the 'activity numbers' to descriptive activity names in joinlabel data frame
-	     joinlabel[, 1] <- activitylabel 
-	
-	## Give a column name to the column in the joinlabel data frame (one column data frame)
-	    colnames(joinlabel) <- "activity"
-	
-	#########################################################################################
-	## Step 4: Appropriately labels the data set with descriptive activity names.
-	##      (i.e.: create a "clean" data set with labels (colnames and rownames))
-	
-	     cat("\n")
-	     cat("Step4: Appropriately labels the data set with descriptiv activity names.\n")
-	
-	##  Firstly, give a column name to the column of the joinsubject data frame (one column data frame)
-	     colnames(joinsubject) <- "subject"
-	
-	##  Combine three working dataframes (joinsubject, joinlabel and joindatanew) into one 
-	##  single data frame via command cbind
-	
-	     cleandata <- cbind(joinsubject, joinlabel, joindatanew)
-	
-	## Cross-check dimensions: (nrows, ncolumns)
-	     dim(cleandata) ## (10299    68)
-	
-	
-	##  Optional: produce an output file that is stored the the above 'merged data set with labels'
-	##            in case it will be useful.
-	
-	     write.table(cleandata, "combinedcleandata.txt")
-	
-	#########################################################################################
-	## Step 5: Creates a second, independent tidy data set with the average of each variable
-	##      for each activity and each subject. 
-	##
-	     cat("\n")
-	     cat("Step5: Creates a independent tidy data set with the average of each variable for each activity and each subject.\n")
-	
-	## Reshape the data: generate skinny data via melt function
-	## Melt the cleadata data set before decasting
-	     meltdfrm <- melt(cleandata, id=c("activity", "subject"))
-	
-	## Cast the melt dataset based on the average of each variable for each activity and each subject
-	     tidydfrm <- dcast(meltdfrm, activity + subject ~ variable, mean)
-	
-	## Create a file containing the tidy data set
-	     write.table(tidydfrm, "tidy_average_data.txt", row.names = F, col.names= T, sep = "\t")
-	
-	     cat("")
-	     cat("DONE: a tidy data file has been created in the working directory!\n")
-	     cat("")
-	     workdone <- "TRUE"
-	
-	} ##end of run_analysis
-	###### End of R script ##################################################################
-	#########################################################################################
-
-
+## library(dplyr)
+## setwd("/cloud/project")
+## features <- read.table("UCI HAR Dataset/features.txt", col.names = c("n","functions"))
+## activities <- read.table("UCI HAR Dataset/activity_labels.txt", col.names = c("code", "activity"))
+## subject_test <- read.table("UCI HAR Dataset/test/subject_test.txt", col.names = "subject")
+## x_test <- read.table("UCI HAR Dataset/test/X_test.txt", col.names = features$functions)
+## y_test <- read.table("UCI HAR Dataset/test/y_test.txt", col.names = "code")
+## subject_train <- read.table("UCI HAR Dataset/train/subject_train.txt", col.names = "subject")
+## x_train <- read.table("UCI HAR Dataset/train/X_train.txt", col.names = features$functions)
+## y_train <- read.table("UCI HAR Dataset/train/y_train.txt", col.names = "code")
+## X <- rbind(x_train, x_test)
+## Y <- rbind(y_train, y_test)
+## Subject <- rbind(subject_train, subject_test)
+## Merged_Data <- cbind(Subject, Y, X)
+## TidyData <- Merged_Data %>% select(subject, code, contains("mean"), contains("std"))
+## TidyData$code <- activities[TidyData$code, 2]
+## names(TidyData)[2] = "activity"
+## names(TidyData)<-gsub("Acc", "Accelerometer", names(TidyData))
+## names(TidyData)<-gsub("Gyro", "Gyroscope", names(TidyData))
+## names(TidyData)<-gsub("BodyBody", "Body", names(TidyData))
+## names(TidyData)<-gsub("Mag", "Magnitude", names(TidyData))
+## names(TidyData)<-gsub("^t", "Time", names(TidyData))
+## names(TidyData)<-gsub("^f", "Frequency", names(TidyData))
+## names(TidyData)<-gsub("tBody", "TimeBody", names(TidyData))
+## names(TidyData)<-gsub("-mean()", "Mean", names(TidyData), ignore.case = TRUE)
+## names(TidyData)<-gsub("-std()", "STD", names(TidyData), ignore.case = TRUE)
+## names(TidyData)<-gsub("-freq()", "Frequency", names(TidyData), ignore.case = TRUE)
+## names(TidyData)<-gsub("angle", "Angle", names(TidyData))
+## names(TidyData)<-gsub("gravity", "Gravity", names(TidyData))
+## FinalData <- TidyData %>%
+  group_by(subject, activity) %>%
+  summarise_all(funs(mean))
+## write.table(FinalData, "FinalData.txt", row.name=FALSE)
+## str(FinalData)
+## FinalData
+## End of R script
 =============================================================================================================
 
 
