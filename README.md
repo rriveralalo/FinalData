@@ -47,23 +47,13 @@ README I have included a README.md in the repo with my scripts. This repo explai
 --------------------------------------------------------------------------------------------------------------------
 
 Obtain the raw data sets and put them in the working directory (via Rstudio)
-The following steps were performed in a PC running the operation system Window 8.1. The data cleaning processes were performed in Rstudio with R version 3.1.0
+The data cleaning processes were performed in Rstudio Posit Cloud.
 
-download the raw data from the following website: https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+Download the raw data from the following website: https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
 
-using the following R command to download the data:
-
-     >setInternet2(TRUE)   
-     >url_proj <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-     >download.file(urlproj, destfile="Dataset.zip", mode="wb")
-unzip the raw data sets
-
-     >unzip("Dataset.zip")
-put the raw data sets in the selected working directory called "datacleaningproject" that is same name as in a repo in my Github account. (In other words, my working directory: "C:/Users/SJ/datacleaningproject")
-
-     > getwd()
-
-    [1] "C:/Users/SJ/datacleaningproject"
+Upload file from computer to File pane in RStudio Posit Cloud.
+Set this file as working directory.
+     > setwd("/cloud/project")
 Create a tidy data via a R script called run_analysis.R
 Preparation: data sets and script
 
@@ -86,44 +76,54 @@ usage:
      > run_analysis() ##run the script
 There are 5 main steps in run_analysis.R to process the raw data sets and create the tidy data set.
 
-Step-0: Reminder -- to install special package "reshape2". It is necessary to install and to load the package "reshape2" before to perform any processes.
+Step-0: Reminder -- to install special package "dplyr". It is necessary to install and to load the package "dplyr" before to perform any processes.
 
-Step-1: Merges the training and the test data sets to create one data set (such as): Load and read the input raw sets; merge three pairs data set (e.g.: X_train.txt, X_test.txt; y_train.txt, y_test.txt; subject_train.txt, subject_text.txt) into three single data set via "rbind" function.
+Step-1: Assigning all data frames
 
-Setp-2: Extracts only the measurements on the mean and standard deviation for each measurement. This step is mainly done by the "grep" function by providing the key search patterns "-mean\(\)|-std\(\)".
+features <- read.table("UCI HAR Dataset/features.txt", col.names = c("n","functions"))
+activities <- read.table("UCI HAR Dataset/activity_labels.txt", col.names = c("code", "activity"))
+subject_test <- read.table("UCI HAR Dataset/test/subject_test.txt", col.names = "subject")
+x_test <- read.table("UCI HAR Dataset/test/X_test.txt", col.names = features$functions)
+y_test <- read.table("UCI HAR Dataset/test/y_test.txt", col.names = "code")
+subject_train <- read.table("UCI HAR Dataset/train/subject_train.txt", col.names = "subject")
+x_train <- read.table("UCI HAR Dataset/train/X_train.txt", col.names = features$functions)
+y_train <- read.table("UCI HAR Dataset/train/y_train.txt", col.names = "code")
 
-    ++ column names from the data sets were changed into lower-case to avoid any uncessary typos
-     (based on the intruction from the "Week4 slide-notes: Editing Text Variables" from 
-     Coursera course Getting and Cleaning Data); characters "()" were replaced "" and
-     characters "-" was replaced to "." via "gsub" function.
-Step-3: Uses descriptive activity names to name the activities in the data set. This step is mainly to produce a one-column data frame called "joinlabel" containing descriptive activity names.
+Setp-2: Merges the training and the test sets to create one data set.
 
-Step-4: Appropriately labels the data set with descriptive activity names. The step is mainly to combine three joined data frames into one data frame called "cleandata". This is the first cleaned data frame toward to the final tidy data set. An (optional/temporary) output file is created called "combinedcleandata.txt" just in case for an emergency.
+X <- rbind(x_train, x_test)
+Y <- rbind(y_train, y_test)
+Subject <- rbind(subject_train, subject_test)
+Merged_Data <- cbind(Subject, Y, X)
 
-Step-5: Creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+Step-3: Extracts only the measurements on the mean and standard deviation for each measurement.
 
-    + It is necessary to install and to load the package "reshape2" before to perform
-    any processes.
-    
-    + The final tidy data frame called "tidydfrm" via "melt" function and then "dcast" function.
-  
-    + Finally, a file called "tidyDataSet.txt" was created via "write.table" function.
-      This is the final output tidy processed data.
-    
-    + The detailed description of the "tidyDataSet.txt" and the given raw data set
-      are in "CodeBook.md" file.
+TidyData <- Merged_Data %>% select(subject, code, contains("mean"), contains("std"))
+
+Step-4: Uses descriptive activity names to name the activities in the data set.
+
+TidyData$code <- activities[TidyData$code, 2]
+
+Step-5: Appropriately labels the data set with descriptive variable names.
+
+names(TidyData)[2] = "activity"
+names(TidyData)<-gsub("Acc", "Accelerometer", names(TidyData))
+names(TidyData)<-gsub("Gyro", "Gyroscope", names(TidyData))
+names(TidyData)<-gsub("BodyBody", "Body", names(TidyData))
+names(TidyData)<-gsub("Mag", "Magnitude", names(TidyData))
+names(TidyData)<-gsub("^t", "Time", names(TidyData))
+names(TidyData)<-gsub("^f", "Frequency", names(TidyData))
+names(TidyData)<-gsub("tBody", "TimeBody", names(TidyData))
+names(TidyData)<-gsub("-mean()", "Mean", names(TidyData), ignore.case = TRUE)
+names(TidyData)<-gsub("-std()", "STD", names(TidyData), ignore.case = TRUE)
+names(TidyData)<-gsub("-freq()", "Frequency", names(TidyData), ignore.case = TRUE)
+names(TidyData)<-gsub("angle", "Angle", names(TidyData))
+names(TidyData)<-gsub("gravity", "Gravity", names(TidyData))
+
+Step-6:  From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+FinalData <- TidyData %>%
+    group_by(subject, activity) %>%
+    summarise_all(funs(mean))
+write.table(FinalData, "FinalData.txt", row.name=FALSE)
 ====================================================================================================
-
-Acknowledgement
-Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012
-
-License
-Using the tidy data set "tidyDataSet.txt" in publications must be acknowledged by reference the publication [1]
-
-[1] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012
-
-This dataset is distributed AS-IS and no responsibility implied or explicit can be addressed to the authors or their institutions for its use or misuse. Any commercial use is prohibited.
-
-Jorge L. Reyes-Ortiz, Alessandro Ghio, Luca Oneto, Davide Anguita. November 2012.
-
-==========================================================================================================
